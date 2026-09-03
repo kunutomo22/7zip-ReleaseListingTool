@@ -1,0 +1,2 @@
+# 7zip-ReleaseListingTool
+7zipのリリースノートを分かりやすいリスト形式にまとめるツールです。
