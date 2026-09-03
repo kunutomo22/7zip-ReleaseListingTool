@@ -66,27 +66,27 @@ try{
 		for($LineIndex = 0;$LineIndex -lt $Lines.length;$LineIndex++){
             $Line = $Lines[$LineIndex]
 			if($Line.Trim() -eq $RELEASE_DESCRIPTION_SEPARATOR_BAR){
-				$ReleaseNameAndDate = $Lines[$LineIndex - 1].Trim()
+				$ReleaseNameAndDate = $Lines[$LineIndex - 1].Trim()#区切り線の1行前はリリース名と日付の行
                 $SpaceCount = 0
                 $Version = ""
                 $ReleaseType = ""
                 $ReleaseTypeVersion = ""
                 $TemplateString = ""
-                for($Index = 0;$Index -lt $ReleaseNameAndDate.length;$Index++){
+                for($Index = 0;$Index -lt $ReleaseNameAndDate.length;$Index++){#リリース名と日付の行を1文字ずつ処理
                     if($SpaceCount -le 3){
                         if($ReleaseNameAndDate[$Index] -eq " "){
                             $SpaceCount ++
                             switch($SpaceCount){
-                                1{$Version = $TemplateString}
-                                2{$ReleaseType = $TemplateString}
-                                3{$ReleaseTypeVersion = $TemplateString}
+                                1{$Version = $TemplateString}#スペースが1つ目が現れた時点ではバージョンが確定(xx.xx)
+                                2{$ReleaseType = $TemplateString}#スペースが2つ目が現れた時点ではリリースタイプが確定(alpha,beta)
+                                3{$ReleaseTypeVersion = $TemplateString}#スペースが3つ目が現れた時点ではリリースタイプバージョンが確定(xx)
                             }
                             $TemplateString = ""
                             continue
                         }
                     }
                     if($ReleaseNameAndDate[$Index] -eq "-"){
-                        $ReleaseDate = $ReleaseNameAndDate[($Index-4)..($ReleaseNameAndDate.length-1)] -join ""
+                        $ReleaseDate = $ReleaseNameAndDate[($Index-4)..($ReleaseNameAndDate.length-1)] -join ""#リリース日付は"-"の4文字前から行末まで
                         $ReleaseNameAndDate = ""
                         break
                     }
@@ -97,7 +97,7 @@ try{
                 continue
 			}
 			if($DescriptionFlag){
-				if($Line -eq "`r"){
+				if($Line -eq "`r"){#"`n"でスプリットしているので、行が"`r"のみの行を改行だけの行と判定
 					$Descriptionflag = !$Descriptionflag
                     $ReleaseObject = New-Object -TypeName PSCustomObject -Property @{Version = $Version;ReleaseType = $ReleaseType;ReleaseTypeVersion = $ReleaseTypeVersion;ReleaseDate = $ReleaseDate;Description = ($DescriptionLines -join "`r`n")}
 					$ReleaseList.Add($ReleaseObject) | Out-Null
