@@ -1,28 +1,29 @@
-#ã‚¨ãƒ©ãƒ¼æŒ™å‹•å®šç¾©
-$ErrorActionPreference = "Stop" #ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸå ´åˆã«ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’åœæ­¢ã™ã‚‹
+#ƒGƒ‰[‹““®’è‹`
+$ErrorActionPreference = "Stop" #ƒGƒ‰[‚ª”­¶‚µ‚½ê‡‚ÉƒXƒNƒŠƒvƒg‚ğ’â~‚·‚é
 
-#å®šæ•°å®šç¾©
-$RELEASE_HISTORY_URL = "https://www.7-zip.org/history.txt" #7zipã®ãƒªãƒªãƒ¼ã‚¹å±¥æ­´URL
-$RELEASE_DESCRIPTION_SEPARATOR_BAR = "-------------------------" #7zipã®ãƒªãƒªãƒ¼ã‚¹å±¥æ­´ä¸­ã«ã‚ã‚‹ã‚¿ã‚¤ãƒˆãƒ«&ãƒªãƒªãƒ¼ã‚¹æ—¥ä»˜ã¨ãƒªãƒªãƒ¼ã‚¹å†…å®¹ã‚’åˆ†ã‘ã‚‹åŒºåˆ‡ã‚Šè¡Œå†…å®¹
+#’è”’è‹`
+$RELEASE_HISTORY_URL = "https://www.7-zip.org/history.txt" #7zip‚ÌƒŠƒŠ[ƒX—š—ğURL
+$RELEASE_DESCRIPTION_SEPARATOR_BAR = "-------------------------" #7zip‚ÌƒŠƒŠ[ƒX—š—ğ’†‚É‚ ‚éƒ^ƒCƒgƒ‹&ƒŠƒŠ[ƒX“ú•t‚ÆƒŠƒŠ[ƒX“à—e‚ğ•ª‚¯‚é‹æØ‚ès“à—e
 
-#ã‚¨ãƒ©ãƒ¼ã‚¹ã‚¿ãƒƒã‚¯ã‚¯ãƒªã‚¢
+#ƒGƒ‰[ƒXƒ^ƒbƒNƒNƒŠƒA
 $Error.Clear()
 
-#å¤‰æ•°åˆæœŸè¨­å®š
-$MyPath = $MyInvocation.MyCommand.Path #ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®ãƒ‘ã‚¹
-$MyBaseName = [system.io.path]::GetFileNameWithoutExtension($MyPath) #ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®ãƒ™ãƒ¼ã‚¹å
-$MyParentPath = Split-Path -Parent $MyInvocation.MyCommand.Path #ã‚¹ã‚¯ãƒªãƒ—ãƒˆã®è¦ªãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªãƒ‘ã‚¹
-$MyLogFolderPath = Join-Path -Path $MyParentPath -ChildPath "Log" #ãƒ­ã‚°ãƒ•ã‚©ãƒ«ãƒ€ãƒ‘ã‚¹
-$MyLogFilePath = Join-Path -Path $MyLogFolderPath -ChildPath ($MyBaseName + ".log") #ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
-$MyCommonFolderPath = Join-Path -Path $MyParentPath -ChildPath "Common" #å…±é€šé–¢æ•°ãƒ•ã‚©ãƒ«ãƒ€ãƒ‘ã‚¹
+#•Ï”‰Šúİ’è
+$MyPath = $MyInvocation.MyCommand.Path #ƒXƒNƒŠƒvƒg‚ÌƒpƒX
+$MyBaseName = [system.io.path]::GetFileNameWithoutExtension($MyPath) #ƒXƒNƒŠƒvƒg‚Ìƒx[ƒX–¼
+$MyParentPath = Split-Path -Parent $MyInvocation.MyCommand.Path #ƒXƒNƒŠƒvƒg‚ÌeƒfƒBƒŒƒNƒgƒŠƒpƒX
+$MyLogFolderPath = Join-Path -Path $MyParentPath -ChildPath "Log" #ƒƒOƒtƒHƒ‹ƒ_ƒpƒX
+$MyLogFilePath = Join-Path -Path $MyLogFolderPath -ChildPath ($MyBaseName + ".log") #ƒƒOƒtƒ@ƒCƒ‹ƒpƒX
+$MyCommonFolderPath = Join-Path -Path $MyParentPath -ChildPath "Common" #‹¤’ÊŠÖ”ƒtƒHƒ‹ƒ_ƒpƒX
+$MyCommonFilePath = Join-Path -Path $MyCommonFolderPath -ChildPath "Common.ps1" #‹¤’ÊŠÖ”ƒtƒ@ƒCƒ‹ƒpƒX
+.$MyCommonFilePath #‹¤’ÊŠÖ”“Ç‚İ‚İ
+$MySettingFilePath = Join-Path -Path $MyParentPath -ChildPath "Setting.txt" #İ’èƒtƒ@ƒCƒ‹ƒpƒX
+
+#ƒAƒZƒ“ƒuƒŠ“Ç‚İ‚İ
+Add-Type -AssemblyName System.Windows.Forms
 
 try{
-	#å…±é€šé–¢æ•°ã®èª­ã¿è¾¼ã¿é–¢æ•°
-	function CommonRead{
-		ls $MyCommonFolderPath | ForEach-Object {.$_.FullName}
-	}
-
-	#ãƒ­ã‚°å‡ºåŠ›é–¢æ•°
+	#ƒƒOo—ÍŠÖ”
 	function Logger{
 		param(
 			[string]$Title,
@@ -37,16 +38,30 @@ try{
 			[string]$LogLevel,
 			[bool]$Popup
 		)
-
+		if(!$Popup -and ($Level -ne "Question")){
+			$Title = ""
+		}
+		$OutputLevelArray = @()
+		switch ($LogLevel){
+			"Error"       { $OutputLevelArray = @("Error","Question") }
+			"Warning"     { $OutputLevelArray = @("Warning","Error","Question") }
+			"Information" { $OutputLevelArray = @("Information","Warning","Error","Question") }
+			"None"        { $OutputLevelArray = @("None","Information","Warning","Error","Question") }
+		}
+		if($Level -in $OutputLevelArray){
+			return LoggerEX -Title $Title -Level $Level -Message $Message
+		}
 	}
 	
-	#ãƒ¡ã‚¤ãƒ³
+	#ƒƒCƒ“
 	Start-Transcript -Path $MyLogFilePath
-	Write-Host "7zip-ReleaseListingToolã‚’é–‹å§‹ã—ã¾ã™ã€‚" -ForegroundColor Green
-	Write-Host "å…±é€šé–¢æ•°ã‚’èª­ã¿è¾¼ã¿ã¾ã™ã€‚"
-	CommonRead
+	Write-Host "7zip-ReleaseListingTool‚ğŠJn‚µ‚Ü‚·B" -ForegroundColor Green
+	Write-Host "İ’èƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ‚Ü‚·B"
+	Invoke-Expression -Command (cat -Path $MySettingFilePath -Raw)
+	Write-Host "İ’èƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ‚Ü‚µ‚½B"
+	Logger -Title "İ’èƒtƒ@ƒCƒ‹“Ç‚İ‚İŒ‹‰Ê" -Level "None" -Message ("[" + ((cat $MySettingFilePath -Encoding UTF8 | ForEach-Object {if(($_)[0] -eq "`$"){$_ | cfs -Delimiter "#"}} | ForEach-Object {$_.P1.Trim()}) -join ",") + "]") -LogLevel $LogLevel -Popup $Popup
 }catch{
-
+	Logger -Title "7zip-ReleaseListingTool‚ÌÀs’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B" -Level "Error" -Message $Error[0].Exception.Message -LogLevel $LogLevel -Popup $true
 }finally{
 	Stop-Transcript
 }

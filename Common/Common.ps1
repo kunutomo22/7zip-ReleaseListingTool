@@ -19,7 +19,7 @@ function LoggerEX {
 			OKPopup -Title $Title -Level $Level -Message $Message
 		}
 	}
-	return ("[" + (Get-Date -Format "yyyy/MM/dd HH:mm:ss") + "] " + "[" + [string]::Format("{0,-11}", $Level) + "] " + $Message)
+	return (("[" + (Get-Date -Format "yyyy/MM/dd HH:mm:ss") + "] " + "[" + ((" " * [math]::Floor((11 - $Level.Length)/2)) + $Level).PadRight(11)) + "] " + $Message)
 }
 
 function OKPopup{
