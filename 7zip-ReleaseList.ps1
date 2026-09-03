@@ -120,8 +120,8 @@ try{
 	
 	$OutputFilePath = Join-Path -Path $MyOutputFolderPath -ChildPath ($OutFileBaseName + "." + $FileExtension)#出力ファイルパス決定
 
-	Logger -Level "Information" -Message "7zipのリリース履歴取得実行" -LogLevel $LogLevel -Popup $Popup
-	if(($OutType -eq "File") -and ($FileExtension -eq "txt")){
+	Logger -Message "7zipのリリース履歴取得実行" -LogLevel $LogLevel -Popup $Popup
+	if(($OutType -eq "File") -and ($FileExtension -eq "txt")){#txtファイル出力の場合は、リリース履歴を直接ダウンロードして出力する
 		Check-WebRequest -URL $RELEASE_HISTORY_URL
 		Simple-WebRequest -URL $RELEASE_HISTORY_URL -OutputPath $OutputFilePath | Out-Null
 		Logger -Level "Information" -Message ("7zipのリリース履歴を[" + $OutputFilePath + "]に出力しました。") -LogLevel $LogLevel -Popup $Popup
@@ -129,12 +129,17 @@ try{
 	}else{
 		$RequestObject = Simple-WebRequest -URL $RELEASE_HISTORY_URL
 	}
-	if($OutType -eq "Console"){
+	Logger -Message "7zipのリリース履歴取得完了" -LogLevel $LogLevel -Popup $Popup
+
+	if($OutType -eq "Console"){#コンソール出力の場合は、リリース履歴をコンソールに出力する
 		echo $RequestObject.Content
 		read-host "Enterを押してください"
 		return
 	}
+
+	Logger -Message "7zipのリリース履歴出力準備" -LogLevel $LogLevel -Popup $Popup
 	$ReleaseListObject = ReleaseListObjectReturn -RequestContent $RequestObject.Content
+	Logger -Message "7zipのリリース履歴出力準備完了" -LogLevel $LogLevel -Popup $Popup
 }catch{
 	Logger -Title "7zip-ReleaseListingToolの実行中にエラーが発生しました。" -Level "Error" -Message $Error[0].Exception.Message -LogLevel $LogLevel -Popup $true
 }finally{
