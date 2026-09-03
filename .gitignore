@@ -9,7 +9,8 @@
 #Snapshots folder
 .snapshots/
 #Testing Output folder
-.output/
+Output/
+!Output/README.md
 #Extension App-file
 *.app
 #Rapid Application Development File
@@ -21,3 +22,5 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+#log files
+Log/
