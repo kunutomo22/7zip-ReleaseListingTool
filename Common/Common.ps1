@@ -46,9 +46,20 @@ function Simple-WebRequest{
 		[string]$OutputPath
 	)
 	if($URL -and $OutputPath){
+		Check-WebRequest -URL $URL
 		Invoke-webRequest -UseBasicParsing -Uri $URL -OutFile $OutputPath | Out-Null
 		return $OutputPath
 	}else{
 		return (Invoke-webRequest -UseBasicParsing -Uri $URL)
+	}
+}
+
+function Check-WebRequest{
+	param(
+		[string]$URL
+	)
+	$StatusCode = (Invoke-webRequest -UseBasicParsing -Uri $URL).StatusCode
+	if( $StatusCode -ne 200){
+		throw ("URLにアクセスできませんでした。URL:" + $URL + "StatusCode:" + $StatusCode)
 	}
 }

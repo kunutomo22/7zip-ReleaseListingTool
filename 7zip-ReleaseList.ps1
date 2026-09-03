@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop" #エラーが発生した場合にスクリプトを停止する
 #定数定義
 $RELEASE_HISTORY_URL = "https://www.7-zip.org/history.txt" #7zipのリリース履歴URL
 $RELEASE_DESCRIPTION_SEPARATOR_BAR = "-------------------------" #7zipのリリース履歴中にあるタイトル&リリース日付とリリース内容を分ける区切り行内容
+$OutFileBaseName = "7zip-ReleaseList" #出力ファイルのベース名
 
 #エラースタッククリア
 $Error.Clear()
@@ -12,6 +13,7 @@ $Error.Clear()
 $MyPath = $MyInvocation.MyCommand.Path #スクリプトのパス
 $MyBaseName = [system.io.path]::GetFileNameWithoutExtension($MyPath) #スクリプトのベース名
 $MyParentPath = Split-Path -Parent $MyInvocation.MyCommand.Path #スクリプトの親ディレクトリパス
+$MyOutputFolderPath = Join-Path -Path $MyParentPath -ChildPath "Output" #出力フォルダパス
 $MyLogFolderPath = Join-Path -Path $MyParentPath -ChildPath "Log" #ログフォルダパス
 $MyLogFilePath = Join-Path -Path $MyLogFolderPath -ChildPath ($MyBaseName + ".log") #ログファイルパス
 $MyCommonFolderPath = Join-Path -Path $MyParentPath -ChildPath "Common" #共通関数フォルダパス
@@ -53,13 +55,86 @@ try{
 		}
 	}
 	
+	#リリース履歴リストオブジェクト作成
+	function ReleaseListObjectReturn{
+		param(
+			$RequestContent
+		)
+        $Lines = $RequestContent.Split("`n")
+		$DescriptionFlag = $false
+        $ReleaseList = New-Object -TypeName System.Collections.ArrayList
+		for($LineIndex = 0;$LineIndex -lt $Lines.length;$LineIndex++){
+            $Line = $Lines[$LineIndex]
+			if($Line.Trim() -eq $RELEASE_DESCRIPTION_SEPARATOR_BAR){
+				$ReleaseNameAndDate = $Lines[$LineIndex - 1].Trim()
+                $SpaceCount = 0
+                $Version = ""
+                $ReleaseType = ""
+                $ReleaseTypeVersion = ""
+                $TemplateString = ""
+                for($Index = 0;$Index -lt $ReleaseNameAndDate.length;$Index++){
+                    if($SpaceCount -le 3){
+                        if($ReleaseNameAndDate[$Index] -eq " "){
+                            $SpaceCount ++
+                            switch($SpaceCount){
+                                1{$Version = $TemplateString}
+                                2{$ReleaseType = $TemplateString}
+                                3{$ReleaseTypeVersion = $TemplateString}
+                            }
+                            $TemplateString = ""
+                            continue
+                        }
+                    }
+                    if($ReleaseNameAndDate[$Index] -eq "-"){
+                        $ReleaseDate = $ReleaseNameAndDate[($Index-4)..($ReleaseNameAndDate.length-1)] -join ""
+                        $ReleaseNameAndDate = ""
+                        break
+                    }
+                    $TemplateString += $ReleaseNameAndDate[$Index]
+                }
+				$DescriptionFlag = !$DescriptionFlag
+				$DescriptionLines = @()
+                continue
+			}
+			if($DescriptionFlag){
+				if($Line -eq "`r"){
+					$Descriptionflag = !$Descriptionflag
+                    $ReleaseObject = New-Object -TypeName PSCustomObject -Property @{Version = $Version;ReleaseType = $ReleaseType;ReleaseTypeVersion = $ReleaseTypeVersion;ReleaseDate = $ReleaseDate;Description = ($DescriptionLines -join "`r`n")}
+					$ReleaseList.Add($ReleaseObject) | Out-Null
+                    continue
+				}
+				$DescriptionLines += $Line
+			}
+		}
+        return $ReleaseList
+	}
+
 	#メイン
 	Start-Transcript -Path $MyLogFilePath
 	Write-Host "7zip-ReleaseListingToolを開始します。" -ForegroundColor Green
 	Write-Host "設定ファイルを読み込みます。"
 	Invoke-Expression -Command (cat -Path $MySettingFilePath -Raw)
 	Write-Host "設定ファイルを読み込みました。"
+	
 	Logger -Title "設定ファイル読み込み結果" -Level "None" -Message ("[" + ((cat $MySettingFilePath -Encoding UTF8 | ForEach-Object {if(($_)[0] -eq "`$"){$_ | cfs -Delimiter "#"}} | ForEach-Object {$_.P1.Trim()}) -join ",") + "]") -LogLevel $LogLevel -Popup $Popup
+	
+	$OutputFilePath = Join-Path -Path $MyOutputFolderPath -ChildPath ($OutFileBaseName + "." + $FileExtension)#出力ファイルパス決定
+
+	Logger -Level "Information" -Message "7zipのリリース履歴取得実行" -LogLevel $LogLevel -Popup $Popup
+	if(($OutType -eq "File") -and ($FileExtension -eq "txt")){
+		Check-WebRequest -URL $RELEASE_HISTORY_URL
+		Simple-WebRequest -URL $RELEASE_HISTORY_URL -OutputPath $OutputFilePath | Out-Null
+		Logger -Level "Information" -Message ("7zipのリリース履歴を[" + $OutputFilePath + "]に出力しました。") -LogLevel $LogLevel -Popup $Popup
+		return
+	}else{
+		$RequestObject = Simple-WebRequest -URL $RELEASE_HISTORY_URL
+	}
+	if($OutType -eq "Console"){
+		echo $RequestObject.Content
+		read-host "Enterを押してください"
+		return
+	}
+	$ReleaseListObject = ReleaseListObjectReturn -RequestContent $RequestObject.Content
 }catch{
 	Logger -Title "7zip-ReleaseListingToolの実行中にエラーが発生しました。" -Level "Error" -Message $Error[0].Exception.Message -LogLevel $LogLevel -Popup $true
 }finally{
