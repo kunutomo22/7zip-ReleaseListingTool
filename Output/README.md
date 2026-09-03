@@ -1,0 +1,2 @@
+# 7zip-ReleaseListingTool OutputFolder
+ファイル出力モードを有効にした際に、7zipのリリース情報がまとまったファイルをここに出力します。

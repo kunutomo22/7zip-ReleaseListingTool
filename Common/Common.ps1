@@ -8,7 +8,7 @@ function LoggerEX {
             "Warning",
             "Information"
 		)][string]$Level = "Information",
-		[string]$Message,
+		[string]$Message
 	)
 	if($Title -ne ""){
 		if($Level -eq "Question"){
